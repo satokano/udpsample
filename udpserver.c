@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     int len;
     struct sockaddr_in from;
     char buf[512];
-    char *ptf;
+    char *ptr;
     int fromlen;
     
     /* 引数にポート番号が指定されているか？ */
