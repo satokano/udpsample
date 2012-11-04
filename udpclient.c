@@ -85,4 +85,58 @@ int main(int argc, char *argv[]) {
     FD_SET(soc, &Mask);
     FD_SET(0, &Mask);
     width = soc + 1;
+    
+    /* 送受信 */
+    error = 0;
+    while (1) {
+        readOk = Mask;
+        timeout.tv_sec = 1;
+        timeout.tv_usec = 0;
+        switch (select(width, (fd_set *)&readOk, NULL, NULL, &timeout)) {
+        case -1:
+            perror("select");
+            break;
+        case 0:
+            break;
+        default:
+            if (FD_ISSET(0, &readOk)) {
+                /* 標準入力レディ */
+                /* 標準入力から1行読み込み */
+                fgets(buf, sizeof(buf), stdin);
+                if (feof(stdin)) {
+                    error = 1;
+                    break;
+                }
+                /* 送信 */
+                if ((len = sendto(soc, buf, strlen(buf), 0, (struct sockaddr *)&to, tolen)) < 0) {
+                    /* エラー */
+                    perror("sendto");
+                    error = 1;
+                    break;
+                }
+            }
+            if (FD_ISSET(soc, &readOk)) {
+                /* ソケットレディ */
+                /* 受信 */
+                fromlen = sizeof(from);
+                if ((len = recvfrom(soc, buf, sizeof(buf), 0, (struct sockaddr *)&from, &fromlen)) < 0) {
+                    /* エラー */
+                    perror("recvfrom");
+                    error = 1;
+                    break;
+                }
+                /* 文字列化・表示 */
+                buf[len] = '\0';
+                printf("> %s", buf);
+            }
+        }
+        if (error) {
+            break;
+        }
+    }
+    
+    /* ソケットクローズ */
+    close(soc);
+    
+    return 0;
 }
