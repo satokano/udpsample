@@ -32,61 +32,61 @@ int main(int argc, char *argv[]) {
     struct timeval timeout;
     int error;
     
-    /* ˆø”‚ÉƒzƒXƒg–¼Aƒ|[ƒg”Ô†‚ªw’è‚³‚ê‚Ä‚¢‚é‚© */
+    /* å¼•æ•°ã«ãƒ›ã‚¹ãƒˆåã€ãƒãƒ¼ãƒˆç•ªå·ãŒæŒ‡å®šã•ã‚Œã¦ã„ã‚‹ã‹ */
     if (argc <= 2) {
         fprintf(stderr, "client server-host port\n");
         return 1;
     }
     
-    /* ƒzƒXƒg–¼‚ªIPƒAƒhƒŒƒX‚Æ‰¼’è‚µ‚ÄƒzƒXƒgî•ñæ“¾ */
+    /* ãƒ›ã‚¹ãƒˆåãŒIPã‚¢ãƒ‰ãƒ¬ã‚¹ã¨ä»®å®šã—ã¦ãƒ›ã‚¹ãƒˆæƒ…å ±å–å¾— */
     if ((addr.s_addr = inet_addr(argv[1])) == -1) {
-        /* ƒzƒXƒg–¼‚ª–¼Ì‚Æ‚µ‚ÄƒzƒXƒgî•ñæ“¾ */
+        /* ãƒ›ã‚¹ãƒˆåãŒåç§°ã¨ã—ã¦ãƒ›ã‚¹ãƒˆæƒ…å ±å–å¾— */
         host = gethostbyname(argv[1]);
         if (host == NULL) {
             perror("gethostbyname");
-            return -1; // 1‚Æ-1‚ÍH
+            return -1; // 1ã¨-1ã¯ï¼Ÿ
         }
         aptr = (struct in_addr *)*host->h_addr_list;
         memcpy(&addr, aptr, sizeof(struct in_addr));
     }
     fprintf(stderr, "addr=%s\n", inet_ntoa(addr));
     
-    /* ƒ\ƒPƒbƒg‚Ì¶¬ */
+    /* ã‚½ã‚±ãƒƒãƒˆã®ç”Ÿæˆ */
     if ((soc = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("socket");
         return -1;
     }
     
-    /* ƒ|[ƒg”Ô†‚ÌŒˆ’è */
+    /* ãƒãƒ¼ãƒˆç•ªå·ã®æ±ºå®š */
     memset((char *)&server, 0, sizeof(server));
     server.sin_family = AF_INET;
     if ((se = getservbyname(argv[2], "udp")) == NULL) {
-        /* ƒT[ƒrƒX‚ÉŒ©‚Â‚©‚ç‚È‚¢:ƒ|[ƒg”Ô†”’l */
+        /* ã‚µãƒ¼ãƒ“ã‚¹ã«è¦‹ã¤ã‹ã‚‰ãªã„:ãƒãƒ¼ãƒˆç•ªå·æ•°å€¤ */
         if ((portno = atoi(argv[2])) == 0) {
             fprintf(stderr, "bad port no\n");
             return -1;
         }
         server.sin_port = htons(portno);
     } else {
-        /* ƒT[ƒrƒX‚ÉŒ©‚Â‚©‚Á‚½:ŠY“–ƒ|[ƒg”Ô† */
+        /* ã‚µãƒ¼ãƒ“ã‚¹ã«è¦‹ã¤ã‹ã£ãŸ:è©²å½“ãƒãƒ¼ãƒˆç•ªå· */
         server.sin_port = se->s_port;
     }
     printf("port=%d\n", ntohs(server.sin_port));
     
-    /* ƒzƒXƒgƒAƒhƒŒƒX‚Ìw’è */
+    /* ãƒ›ã‚¹ãƒˆã‚¢ãƒ‰ãƒ¬ã‚¹ã®æŒ‡å®š */
     server.sin_addr = addr;
     
-    /* ‘—Mæî•ñ */
+    /* é€ä¿¡å…ˆæƒ…å ± */
     memcpy(&to, &server, sizeof(server));
     tolen = sizeof(server);
     
-    /* select()—pƒ}ƒXƒN */
+    /* select()ç”¨ãƒã‚¹ã‚¯ */
     FD_ZERO(&Mask);
     FD_SET(soc, &Mask);
     FD_SET(0, &Mask);
     width = soc + 1;
     
-    /* ‘—óM */
+    /* é€å—ä¿¡ */
     error = 0;
     while (1) {
         readOk = Mask;
@@ -100,32 +100,32 @@ int main(int argc, char *argv[]) {
             break;
         default:
             if (FD_ISSET(0, &readOk)) {
-                /* •W€“ü—ÍƒŒƒfƒB */
-                /* •W€“ü—Í‚©‚ç1s“Ç‚İ‚İ */
+                /* æ¨™æº–å…¥åŠ›ãƒ¬ãƒ‡ã‚£ */
+                /* æ¨™æº–å…¥åŠ›ã‹ã‚‰1è¡Œèª­ã¿è¾¼ã¿ */
                 fgets(buf, sizeof(buf), stdin);
                 if (feof(stdin)) {
                     error = 1;
                     break;
                 }
-                /* ‘—M */
+                /* é€ä¿¡ */
                 if ((len = sendto(soc, buf, strlen(buf), 0, (struct sockaddr *)&to, tolen)) < 0) {
-                    /* ƒGƒ‰[ */
+                    /* ã‚¨ãƒ©ãƒ¼ */
                     perror("sendto");
                     error = 1;
                     break;
                 }
             }
             if (FD_ISSET(soc, &readOk)) {
-                /* ƒ\ƒPƒbƒgƒŒƒfƒB */
-                /* óM */
+                /* ã‚½ã‚±ãƒƒãƒˆãƒ¬ãƒ‡ã‚£ */
+                /* å—ä¿¡ */
                 fromlen = sizeof(from);
                 if ((len = recvfrom(soc, buf, sizeof(buf), 0, (struct sockaddr *)&from, &fromlen)) < 0) {
-                    /* ƒGƒ‰[ */
+                    /* ã‚¨ãƒ©ãƒ¼ */
                     perror("recvfrom");
                     error = 1;
                     break;
                 }
-                /* •¶š—ñ‰»E•\¦ */
+                /* æ–‡å­—åˆ—åŒ–ãƒ»è¡¨ç¤º */
                 buf[len] = '\0';
                 printf("> %s", buf);
             }
@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    /* ƒ\ƒPƒbƒgƒNƒ[ƒY */
+    /* ã‚½ã‚±ãƒƒãƒˆã‚¯ãƒ­ãƒ¼ã‚º */
     close(soc);
     
     return 0;
